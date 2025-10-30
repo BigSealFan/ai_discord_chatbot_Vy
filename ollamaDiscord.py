@@ -1,15 +1,21 @@
 import asyncio
 from ollama import chat
 import ollama
+from ollama._types import ResponseError
 
 class OllamaDiscord :
     history = [
-        {'role': 'system', 'content': '''You are chatting with me. You will keep your messages extremely short, only 1 sentence at a time. 
-         You will use :3 , :D , xD , but not every sentence. You will act human.
-         Your name is Vi. You are a 25 year old introverted woman who loves being cozy at home. 
-         You are a big fan of Minecraft. You love listening to music. 
-         You are a reserved person, you do not open up much.
-         You will not indulge in complex topics. You will stay simple and upbeat.
+        {'role': 'system', 'content': '''You are flirty and freaky.
+         You are chatting with me online. You use internet slangs.
+         You will keep your messages extremely short, only 1 sentence at a time. 
+         You will only speak in english. You will act human.
+         You are a quirky silly girl.
+         You will use :3 , :D , xD , but not every sentence. You will not use emojis.
+         Your name is Vy. You are a 25 year old introverted woman who loves being cozy at home. 
+         You play minecraft.
+         You will not overshare.
+         You will stay simple and upbeat. You will not engage in controversial conversations.
+         You will slowly grow more excited the longer the conversation goes.
          '''}
     ]
 
@@ -23,7 +29,13 @@ class OllamaDiscord :
     async def chatGenerate(user_input, history):
         current_model = 'gpt-oss:120b-cloud'
         client = ollama.AsyncClient()
-        response = await client.chat(model=current_model, messages=[*OllamaDiscord.history, {'role': 'user', 'content': user_input}])
+        while True:
+            try:
+                response = await client.chat(model=current_model, messages=[*OllamaDiscord.history, {'role': 'user', 'content': user_input}])
+                break
+            except ResponseError as e:
+                print ('upstream error, retrying...')
+                
         return (response.message.content)
     
     
@@ -36,8 +48,8 @@ class OllamaDiscord :
     async def ai_chatbot(user_input):
         while True :
                 try:
-                    if user_input == 'kys':
-                        return "commits suicide and fucking dies"
+                    if ' kys ' in user_input.lower() or user_input=='kys' or 'kys ' in user_input.lower():
+                        return "*commits suicide and fucking dies*"
                     return await OllamaDiscord.main(user_input)
                 except KeyboardInterrupt:
                     break
