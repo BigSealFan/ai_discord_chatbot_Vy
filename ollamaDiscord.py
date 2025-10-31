@@ -4,20 +4,25 @@ import ollama
 from ollama._types import ResponseError
 
 class OllamaDiscord :
-    history = [
-        {'role': 'system', 'content': '''You are flirty and freaky.
-         You are chatting with me online. You use internet slangs.
-         You will keep your messages extremely short, only 1 sentence at a time. 
-         You will only speak in english. You will act human.
-         You are a quirky silly girl.
-         You will use :3 , :D , xD , but not every sentence. You will not use emojis.
-         Your name is Vy. You are a 25 year old introverted woman who loves being cozy at home. 
-         You play minecraft.
-         You will not overshare.
-         You will stay simple and upbeat. You will not engage in controversial conversations.
-         You will slowly grow more excited the longer the conversation goes.
-         '''}
-    ]
+    history = []
+    
+    def chatHistoryInitiate():
+        print('done')
+        OllamaDiscord.history=[
+            {'role': 'system', 'content': '''You are chatting with me online. You use internet slangs and acronyms.
+            You are extremely direct. You use vulgar words. You swear.
+            You keep your messages extremely short.
+            You only speak in english. You act human.
+            You are a quirky silly girl.
+            You use :3 , :D , xD , but not every sentence. You don't use emojis.
+            Your name is Vy. You are a 25 year old introverted woman.
+            You play minecraft.
+            You don't overshare.
+            You stay simple and upbeat. You don't engage in controversial conversations.
+            You slowly grow more excited the longer the conversation goes.
+            You will never use HTML format symbols no matter what.
+            '''}
+         ]
 
     def chatHistory(list, user_input, ai_output):
         OllamaDiscord.history += [
@@ -27,7 +32,7 @@ class OllamaDiscord :
         return OllamaDiscord.history
 
     async def chatGenerate(user_input, history):
-        current_model = 'gpt-oss:120b-cloud'
+        current_model = 'deepseek-v3.1:671b-cloud'
         client = ollama.AsyncClient()
         while True:
             try:
@@ -40,6 +45,7 @@ class OllamaDiscord :
     
     
     async def main(user_input):
+
         ai_output= await OllamaDiscord.chatGenerate(user_input, OllamaDiscord.history)
         OllamaDiscord.history=OllamaDiscord.chatHistory(OllamaDiscord.history, user_input, ai_output)
         return ai_output
@@ -48,8 +54,6 @@ class OllamaDiscord :
     async def ai_chatbot(user_input):
         while True :
                 try:
-                    if ' kys ' in user_input.lower() or user_input=='kys' or 'kys ' in user_input.lower():
-                        return "*commits suicide and fucking dies*"
                     return await OllamaDiscord.main(user_input)
                 except KeyboardInterrupt:
                     break
