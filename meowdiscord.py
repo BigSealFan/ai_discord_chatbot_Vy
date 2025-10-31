@@ -4,7 +4,6 @@ import sys
 import discord
 import asyncio
 import re
-
 class MyClient(discord.Client):
 
     messages_sent =""
