@@ -58,68 +58,99 @@ class MyClient(discord.Client):
 
                     self.debounce_task = asyncio.create_task(send_the_sum())
 
-    async def send_messages(self,message):
-         while message:
-            # Find positions
-            positions = [(message.find(','), ','), 
-                        (message.find('—'), '—'), 
-                        (message.find('.'), '.'),
-                        (message.find('('),'('),
-                        (message.find('!'),'!'),
-                        (message.find('?'),'?'),
-                        (message.find(')'),')'),
-                        (message.find('\n'),'\n'),
-                        (message.find('"'),'"')]
 
-            # Keep only separators that exist
-            positions = [(pos, sep) for pos, sep in positions if pos != -1]
+                    
+    positions=[]
+    chunks=[('(',')'),('"','"'),('“','”'),('*','*')]
+    before=None
+    after=None
 
-            # No separators left
-            if not positions:
-                if len(message) > 1 and message[1].islower():
+    def initiate_list(self,message):
+        self.positions = [(message.find(','), ','), 
+                            (message.find('—'), '—'), 
+                            (message.find('.'), '.'),
+                            (message.find('('),'('),
+                            (message.find('!'),'!'),
+                            (message.find('?'),'?'),
+                            (message.find(')'),')'),
+                            (message.find('\n'),'\n'),
+                            (message.find('"'),'"'),
+                            (message.find('“'),'“'), #beginning
+                            (message.find('”'),'”'), #end
+                            (message.find('*'),'*')
+                            ]
+        self.positions = [(pos, sep) for pos, sep in self.positions if pos != -1] #only take existing separators
+    
+    def lowercase_uppercase(self,message): 
+         if len(message) > 1 and message[1].islower(): #if the first Word isn't all UPPERCASE, make it all lowercase
                     message=message[:1].lower()+message[1:]
-                await self.specific_channel_id.send(message)
+         return message
+
+    async def send_messages(self,message):
+        while message and message!="":
+            
+            self.initiate_list(message)
+            
+            if not self.positions or self.positions==[]: #no separators
+                await self.specific_channel_id.send(self.lowercase_uppercase(message))
+                message=None
                 break
 
-            # Pick the earliest separator
-            sep_pos, sep_char = min(positions, key=lambda x: x[0])
+            fpos, fchar = min(self.positions, key=lambda x: x[0]) #first separator and its position
 
-            # Split and send
-            if sep_char=='?' or sep_char=='!' or sep_char=='(' or sep_char==')' or sep_char=='"' :
-                before = message[:sep_pos+1].strip()
-            else:
-                before = message[:sep_pos].strip()
-            if len(before)>1 and before[1].islower():
-                before = before[:1].lower()+before[1:]
-            if sep_char=='(' and ')' in message[sep_pos + 1:]:
-                after = message[sep_pos:].strip() #of ( )
-            elif sep_char=='"' and '"' in message[sep_pos + 1:]:
-                after = message[sep_pos:].strip() #of ( )
-            else:
-                after = message[sep_pos + 1:].strip()
-            if before!="":
-                 if sep_char=='(' and ')' in message[sep_pos + 1:]:
-                     before=after[:after.find(')')+1] #of ( )
-                     await self.specific_channel_id.send(before)
-                     after=after[after.find(')') + 1:].strip()
-                 elif sep_char=='"' and '"' in message[sep_pos + 1:]:
-                     before=after[:after[1:].find('"')+2] #of " "
-                     await self.specific_channel_id.send(before)
-                     after=after[after[1:].find('"')+2:].strip()
-                 elif (sep_char=='?' or sep_char=='!') and len(after)<4:
-                    await self.specific_channel_id.send(f"{before} {after}")
-                    after=""
-                 else:
-                    while after and after[0] in [',', '—', '.', '(', ')', '!', '?', '"']:
-                        before+=after[0]
-                        after=after[1:]
-                    await self.specific_channel_id.send(before)
-            message = after
-    def fix_quotes(self,message):
+            if any(fchar==chunk1 and chunk2 in message[fpos+1:] for chunk1, chunk2 in self.chunks) and len(message)>1: #if a chunk exists
+                fchar2 = next((chunk2 for chunk1, chunk2 in self.chunks if chunk1 == fchar),) #find the appropriate end of chunk
+                before, after, rest = self.chunk(message, fchar, fchar2)
+                if self.lowercase_uppercase(before.strip()): #to avoid empty messages 
+                    await self.specific_channel_id.send(self.lowercase_uppercase(before.strip()))
+                if self.lowercase_uppercase(after.strip()):
+                    await self.specific_channel_id.send(self.lowercase_uppercase(after.strip()))
+                message=rest
+                continue
+
+            before, after = self.split(message, fchar)
+            if self.lowercase_uppercase(before.strip()):
+                await self.specific_channel_id.send(self.lowercase_uppercase(before.strip()))
+            message=after.strip()
+
+
+
+    def chunk(self,message, sep1, sep2): #returns before chunk between 2 separators, and after
+         sep1_index=message.find(sep1) 
+         sep2_index=message.find(sep2, sep1_index + 1) #include the second sep in the chunk
+
+         while sep2_index+1<len(message) and any(sep==message[sep2_index+1] for pos, sep in self.positions) : #if next character is also a separator
+              sep2_index+=1 #include it in chunk
+
+         return message[:sep1_index].strip(), message[sep1_index:sep2_index+1].strip(), message[sep2_index+1:].strip()
+    
+    def split(self,message, sep):
+         if sep=='—' or sep==',' or sep=='.'or sep=='\n': #don't include those in the visible message
+            sep_index=message.find(sep) 
+         else:
+            sep_index=message.find(sep) +1 #include the rest
+
+         three_points=False
+         while sep_index+1<len(message) and any(sepp==message[sep_index+1] for pos, sepp in self.positions): #if next character is also a separator
+              sep_index+=1 #include it in split
+              if not three_points and sep=='.' or sep=='!' or sep=='?': #in case of spams like !!! ??? ...
+                 if sep=='.': #look at beginning of the function
+                     sep_index+=1
+                 sep_index+=1
+                 three_points=True
+         if '?!' in message or '!?' in message: #it only does +1 for one of them
+            sep_index+=1
+         
+         return message[:sep_index].strip(), message[sep_index+1:].strip()
+
+    def fix_quotes(self,message): #fix for sometimes when the ai puts the comma before the end of quotes
         for index, character in enumerate(message):
-            if character == '"':
+            if character=='"':
                 if message[index-1]==',':
                     message=message[:index-1]+'",'+message[index+2:]
+            if character=='”':
+                if message[index-1]==',':
+                    message=message[:index-1]+'”,'+message[index+2:]
         return message
     
     async def history_max(self):
