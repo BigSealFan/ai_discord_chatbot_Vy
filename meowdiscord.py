@@ -66,21 +66,22 @@ class MyClient(discord.Client):
     after=None
 
     def initiate_list(self,message):
-        self.positions = [(message.find(','), ','), 
-                            (message.find('—'), '—'), 
-                            (message.find('.'), '.'),
-                            (message.find('('),'('),
-                            (message.find('!'),'!'),
-                            (message.find('?'),'?'),
-                            (message.find(')'),')'),
-                            (message.find('\n'),'\n'),
-                            (message.find('"'),'"'),
-                            (message.find('“'),'“'), #beginning
-                            (message.find('”'),'”'), #end
-                            (message.find('*'),'*')
-                            ]
-        self.positions = [(pos, sep) for pos, sep in self.positions if pos != -1] #only take existing separators
-    
+        message = message.replace('\\n', '\n') #transforms fake \n into real ones
+        separators = [',','—','.','(','!','?',')','"','“','”','*','\n']
+        self.positions = []
+        for sep in separators:
+            for match in re.finditer(re.escape(sep), message):
+                pos = match.start()
+                if (
+                    sep == '.' and pos < len(message)-1 and message[pos + 1].isalpha() # Skip dots inside words (like "hell.o" or "v1.2")
+                ):
+                    continue
+                self.positions.append((pos, sep))
+
+        # sort positions by order of appearance
+        self.positions.sort(key=lambda x: x[0])
+
+
     def lowercase_uppercase(self,message): 
          if len(message) > 1 and message[1].islower(): #if the first Word isn't all UPPERCASE, make it all lowercase
                     message=message[:1].lower()+message[1:]
@@ -96,7 +97,7 @@ class MyClient(discord.Client):
                 message=None
                 break
 
-            fpos, fchar = min(self.positions, key=lambda x: x[0]) #first separator and its position
+            fpos, fchar = self.positions[0] #first separator and its position
 
             if any(fchar==chunk1 and chunk2 in message[fpos+1:] for chunk1, chunk2 in self.chunks) and len(message)>1: #if a chunk exists
                 fchar2 = next((chunk2 for chunk1, chunk2 in self.chunks if chunk1 == fchar),) #find the appropriate end of chunk
@@ -108,11 +109,10 @@ class MyClient(discord.Client):
                 message=rest
                 continue
 
-            before, after = self.split(message, fchar)
+            before, after = self.split(message, fchar, fpos)
             if self.lowercase_uppercase(before.strip()):
                 await self.specific_channel.send(self.lowercase_uppercase(before.strip()))
             message=after.strip()
-
 
 
     def chunk(self,message, sep1, sep2): #returns before chunk between 2 separators, and after
@@ -124,16 +124,14 @@ class MyClient(discord.Client):
 
          return message[:sep1_index].strip(), message[sep1_index:sep2_index+1].strip(), message[sep2_index+1:].strip()
     
-    def split(self,message, sep):
-         if sep=='—' or sep==',' or sep=='.'or sep=='\n': #don't include those in the visible message
-            sep_index=message.find(sep) 
-         else:
+    def split(self,message, sep, sep_index):
+         if not(sep=='—' or sep==',' or sep=='.'or sep=='\n'): #don't include those in the visible message
             sep_index=message.find(sep) +1 #include the rest
 
          three_points=False
          while sep_index+1<len(message) and any(sepp==message[sep_index+1] for pos, sepp in self.positions): #if next character is also a separator
               sep_index+=1 #include it in split
-              if not three_points and sep=='.' or sep=='!' or sep=='?': #in case of spams like !!! ??? ...
+              if not three_points and (sep=='.' or sep=='!' or sep=='?'): #in case of spams like !!! ??? ...
                  if sep=='.': #look at beginning of the function
                      sep_index+=1
                  sep_index+=1
@@ -145,7 +143,7 @@ class MyClient(discord.Client):
 
     def fix_quotes(self,message): #fix for sometimes when the ai puts the comma before the end of quotes
         for index, character in enumerate(message):
-            if character=='"':
+            if character=='"' and index>0:
                 if message[index-1]==',':
                     message=message[:index-1]+'",'+message[index+2:]
             if character=='”':
