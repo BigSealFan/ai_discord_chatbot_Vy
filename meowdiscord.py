@@ -8,7 +8,6 @@ class MyClient(discord.Client):
 
     messages_sent =""
     debounce_task = None
-    startReading = None
     specific_channel  = None
     specific_user_id = None
     running = False
@@ -20,12 +19,10 @@ class MyClient(discord.Client):
         if (message.content=='!start' and self.running==False) or message.content=='!forcestart':
             self.specific_user_id = message.author.id
             self.specific_channel = message.channel
-            self.startReading=True
             OllamaDiscord.chatHistoryInitiate()
             self.running=True
             await self.specific_channel.send(f"<@{message.author.id}> connection established.")
-        elif message.content[:3]!='!no':
-            if self.startReading:
+        elif message.content[:3]!='!no' and self.running:
                 if re.search(r'\bkys\b', message.content, re.IGNORECASE):
                     if message.author.id != self.specific_user_id or message.channel.id != self.specific_channel.id :
                         return
