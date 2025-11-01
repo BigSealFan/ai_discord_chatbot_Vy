@@ -95,6 +95,7 @@ class MyClient(discord.Client):
             
             if not self.positions or self.positions==[]: #no separators
                 await self.specific_channel.send(self.lowercase_uppercase(message))
+                print(self.lowercase_uppercase(message))
                 message=None
                 break
 
@@ -113,6 +114,7 @@ class MyClient(discord.Client):
             before, after = self.split(message, fchar, fpos)
             if self.lowercase_uppercase(before.strip()):
                 await self.specific_channel.send(self.lowercase_uppercase(before.strip()))
+                print(self.lowercase_uppercase(before.strip()))
             message=after.strip()
 
 
@@ -130,22 +132,28 @@ class MyClient(discord.Client):
             sep_index=message.find(sep) +1 #include the rest
 
          three_points=False
+         var=0
          while sep_index+1<len(message) and any(sepp==message[sep_index+1] for pos, sepp in self.positions): #if next character is also a separator
               sep_index+=1 #include it in split
               if not three_points and (sep=='.' or sep=='!' or sep=='?'): #in case of spams like !!! ??? ...
                  if sep=='.': #look at beginning of the function
                      sep_index+=1
+                     var=1
                  sep_index+=1
                  three_points=True
          if '?!' in message or '!?' in message: #it only does +1 for one of them
             sep_index+=1
+         if sep=='\n': #2 char long
+            var=-1
          
-         return message[:sep_index].strip(), message[sep_index+1:].strip()
+         return message[:sep_index].strip(), message[sep_index+1-var:].strip()
 
     def fix_quotes(self,message): #fix for sometimes when the ai puts the comma before the end of quotes
+        i=0
         for index, character in enumerate(message):
             if character=='"' and index>0:
-                if message[index-1]==',':
+                i+=1
+                if message[index-1]==',' and  i%2==0:
                     message=message[:index-1]+'",'+message[index+2:]
             if character=='”':
                 if message[index-1]==',':
