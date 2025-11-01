@@ -23,13 +23,14 @@ class MyClient(discord.Client):
             self.startReading=True
             OllamaDiscord.chatHistoryInitiate()
             self.running=True
-            await self.specific_channel_id.send('connection established.')
+            await self.specific_channel_id.send(f"<@{message.author.id}> connection established.")
         elif message.content[:3]!='!no':
             if self.startReading:
                 if re.search(r'\bkys\b', message.content, re.IGNORECASE):
                     if message.author.id != self.specific_user_id or message.channel.id != self.specific_channel_id.id :
                         return
                     await self.specific_channel_id.send("*commits suicide and fucking dies*")
+                    print("*commits suicide and fucking dies*")
                     self.specific_channel_id=None
                     self.specific_user_id=None
                     self.running=False
@@ -47,6 +48,7 @@ class MyClient(discord.Client):
                             try:
                                 await asyncio.sleep(2)
                                 ai_output = await OllamaDiscord.ai_chatbot(self.messages_sent)
+                                print('-------------------------')
                                 print(ai_output)
                                 await self.send_messages(self.fix_quotes(ai_output))
                                 self.messages_sent = "" 
