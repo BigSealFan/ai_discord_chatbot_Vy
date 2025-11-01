@@ -9,7 +9,7 @@ class MyClient(discord.Client):
     messages_sent =""
     debounce_task = None
     startReading = None
-    specific_channel_id  = None
+    specific_channel  = None
     specific_user_id = None
     running = False
 
@@ -19,24 +19,24 @@ class MyClient(discord.Client):
     async def on_message(self, message):
         if (message.content=='!start' and self.running==False) or message.content=='!forcestart':
             self.specific_user_id = message.author.id
-            self.specific_channel_id = message.channel
+            self.specific_channel = message.channel
             self.startReading=True
             OllamaDiscord.chatHistoryInitiate()
             self.running=True
-            await self.specific_channel_id.send(f"<@{message.author.id}> connection established.")
+            await self.specific_channel.send(f"<@{message.author.id}> connection established.")
         elif message.content[:3]!='!no':
             if self.startReading:
                 if re.search(r'\bkys\b', message.content, re.IGNORECASE):
-                    if message.author.id != self.specific_user_id or message.channel.id != self.specific_channel_id.id :
+                    if message.author.id != self.specific_user_id or message.channel.id != self.specific_channel.id :
                         return
-                    await self.specific_channel_id.send("*commits suicide and fucking dies*")
+                    await self.specific_channel.send("*commits suicide and fucking dies*")
                     print('-------------------------')
                     print("connection disconnected.")
-                    self.specific_channel_id=None
+                    self.specific_channel=None
                     self.specific_user_id=None
                     self.running=False
                 else:
-                    if message.author.id != self.specific_user_id or message.channel.id != self.specific_channel_id.id :
+                    if message.author.id != self.specific_user_id or message.channel.id != self.specific_channel.id :
                         return
                     if not self.messages_sent:
                         self.messages_sent=message.content
@@ -92,7 +92,7 @@ class MyClient(discord.Client):
             self.initiate_list(message)
             
             if not self.positions or self.positions==[]: #no separators
-                await self.specific_channel_id.send(self.lowercase_uppercase(message))
+                await self.specific_channel.send(self.lowercase_uppercase(message))
                 message=None
                 break
 
@@ -102,15 +102,15 @@ class MyClient(discord.Client):
                 fchar2 = next((chunk2 for chunk1, chunk2 in self.chunks if chunk1 == fchar),) #find the appropriate end of chunk
                 before, after, rest = self.chunk(message, fchar, fchar2)
                 if self.lowercase_uppercase(before.strip()): #to avoid empty messages 
-                    await self.specific_channel_id.send(self.lowercase_uppercase(before.strip()))
+                    await self.specific_channel.send(self.lowercase_uppercase(before.strip()))
                 if self.lowercase_uppercase(after.strip()):
-                    await self.specific_channel_id.send(self.lowercase_uppercase(after.strip()))
+                    await self.specific_channel.send(self.lowercase_uppercase(after.strip()))
                 message=rest
                 continue
 
             before, after = self.split(message, fchar)
             if self.lowercase_uppercase(before.strip()):
-                await self.specific_channel_id.send(self.lowercase_uppercase(before.strip()))
+                await self.specific_channel.send(self.lowercase_uppercase(before.strip()))
             message=after.strip()
 
 
@@ -154,7 +154,7 @@ class MyClient(discord.Client):
         return message
     
     async def history_max(self):
-        await self.specific_channel_id.send("[chat history reached max. removing earlier messages.]")
+        await self.specific_channel.send("[chat history reached max. removing earlier messages.]")
                     
         
 
