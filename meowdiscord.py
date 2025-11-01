@@ -21,39 +21,43 @@ class MyClient(discord.Client):
             self.specific_channel = message.channel
             OllamaDiscord.chatHistoryInitiate()
             self.running=True
-            await self.specific_channel.send(f"<@{message.author.id}> connection established.")
+            await self.specific_channel.send(f'<@{message.author.id}> connection established. <!help> for list of commands')
+        
+        elif message.content[:5]=='!help' and self.running:
+            await self.specific_channel.send('```!start``` to start new conversation```!no [whatever u wanna say]``` ignores anything u write in that message```!save [name]``` to save your chat history as [name]```!load [name]``` to load your chat history of [name]```!end``` to end current conversation')
+
+        elif message.content=='!end':
+                if message.author.id != self.specific_user_id or message.channel.id != self.specific_channel.id :
+                    return
+                await self.specific_channel.send("connection disconnected.")
+                print('-------------------------')
+                print("connection disconnected.")
+                self.specific_channel=None
+                self.specific_user_id=None
+                self.running=False
+
         elif message.content[:3]!='!no' and self.running:
-                if re.search(r'\bkys\b', message.content, re.IGNORECASE):
-                    if message.author.id != self.specific_user_id or message.channel.id != self.specific_channel.id :
-                        return
-                    await self.specific_channel.send("*commits suicide and fucking dies*")
-                    print('-------------------------')
-                    print("connection disconnected.")
-                    self.specific_channel=None
-                    self.specific_user_id=None
-                    self.running=False
-                else:
-                    if message.author.id != self.specific_user_id or message.channel.id != self.specific_channel.id :
-                        return
-                    if not self.messages_sent:
-                        self.messages_sent=message.content
-                    else:
-                        self.messages_sent+=f" . {message.content}"
-                    if self.debounce_task and not self.debounce_task.done():
-                        self.debounce_task.cancel()
+            if message.author.id != self.specific_user_id or message.channel.id != self.specific_channel.id :
+                return
+            if not self.messages_sent:
+                self.messages_sent=message.content
+            else:
+                self.messages_sent+=f" . {message.content}"
+            if self.debounce_task and not self.debounce_task.done():
+                self.debounce_task.cancel()
 
-                    async def send_the_sum():
-                            try:
-                                await asyncio.sleep(2)
-                                ai_output = await OllamaDiscord.ai_chatbot(self,self.messages_sent)
-                                print('-------------------------')
-                                print(ai_output)
-                                await self.send_messages(self.fix_quotes(ai_output))
-                                self.messages_sent = "" 
-                            except asyncio.CancelledError:
-                                pass
+            async def send_the_sum():
+                    try:
+                        await asyncio.sleep(2)
+                        ai_output = await OllamaDiscord.ai_chatbot(self,self.messages_sent)
+                        print('-------------------------')
+                        print(ai_output)
+                        await self.send_messages(self.fix_quotes(ai_output))
+                        self.messages_sent = "" 
+                    except asyncio.CancelledError:
+                        pass
 
-                    self.debounce_task = asyncio.create_task(send_the_sum())
+            self.debounce_task = asyncio.create_task(send_the_sum())
 
 
                     
