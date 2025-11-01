@@ -17,7 +17,7 @@ class MyClient(discord.Client):
         print('Logged on as', self.user)
 
     async def on_message(self, message):
-        if (message.content=='!start' and self.running==False):
+        if (message.content=='!start' and self.running==False) or message.content=='!forcestart':
             self.specific_user_id = message.author.id
             self.specific_channel_id = message.channel
             self.startReading=True
