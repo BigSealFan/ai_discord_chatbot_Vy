@@ -67,7 +67,7 @@ class MyClient(discord.Client):
 
     def initiate_list(self,message):
         message = message.replace('\\n', '\n') #transforms fake \n into real ones
-        separators = [',','—','.','(','!','?',')','"','“','”','*','\n']
+        separators = [',','—','.','(','!','?',')','"','“','”','*','\n', '…']
         self.positions = []
         for sep in separators:
             for match in re.finditer(re.escape(sep), message):
