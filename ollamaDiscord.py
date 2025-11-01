@@ -6,9 +6,11 @@ from ollama._types import ResponseError
 class OllamaDiscord :
     history = []
     messages_count=0
+    max_history_message_sent=None
     
     def chatHistoryInitiate():
-        print('done')
+        print('-------------------------')
+        print('connection established.')
         OllamaDiscord.history=[
             {'role': 'system', 'content': '''You are chatting with me online. You use internet slangs and acronyms.
             You are extremely direct. You use vulgar words. You swear.
@@ -26,12 +28,20 @@ class OllamaDiscord :
             '''}
          ]
         OllamaDiscord.messages_count=0
+        OllamaDiscord.max_history_message_sent=False
 
-    def chatHistory(list, user_input, ai_output):
+    async def chatHistory(client,list, user_input, ai_output):
         OllamaDiscord.history += [
             {'role': 'user', 'content': user_input},
             {'role': 'assistant', 'content': ai_output},
             ]
+        OllamaDiscord.messages_count+=1
+        if OllamaDiscord.messages_count>80:
+            if not OllamaDiscord.max_history_message_sent:
+                await client.history_max()
+                OllamaDiscord.max_history_message_sent=True
+            del OllamaDiscord.history[1:3]
+            return OllamaDiscord.history
         return OllamaDiscord.history
 
     async def chatGenerate(user_input, history):
@@ -47,16 +57,16 @@ class OllamaDiscord :
         return (response.message.content)
     
     
-    async def main(user_input):
+    async def main(client, user_input):
 
         ai_output= await OllamaDiscord.chatGenerate(user_input, OllamaDiscord.history)
-        OllamaDiscord.history=OllamaDiscord.chatHistory(OllamaDiscord.history, user_input, ai_output)
+        OllamaDiscord.history=await OllamaDiscord.chatHistory(client, OllamaDiscord.history, user_input, ai_output)
         return ai_output
             
 
-    async def ai_chatbot(user_input):
+    async def ai_chatbot(client, user_input):
         while True :
                 try:
-                    return await OllamaDiscord.main(user_input)
+                    return await OllamaDiscord.main(client,user_input)
                 except KeyboardInterrupt:
                     break

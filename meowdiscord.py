@@ -17,7 +17,7 @@ class MyClient(discord.Client):
         print('Logged on as', self.user)
 
     async def on_message(self, message):
-        if message.content=='!start' and self.running==False:
+        if (message.content=='!start' and self.running==False):
             self.specific_user_id = message.author.id
             self.specific_channel_id = message.channel
             self.startReading=True
@@ -30,7 +30,8 @@ class MyClient(discord.Client):
                     if message.author.id != self.specific_user_id or message.channel.id != self.specific_channel_id.id :
                         return
                     await self.specific_channel_id.send("*commits suicide and fucking dies*")
-                    print("*commits suicide and fucking dies*")
+                    print('-------------------------')
+                    print("connection disconnected.")
                     self.specific_channel_id=None
                     self.specific_user_id=None
                     self.running=False
@@ -47,7 +48,7 @@ class MyClient(discord.Client):
                     async def send_the_sum():
                             try:
                                 await asyncio.sleep(2)
-                                ai_output = await OllamaDiscord.ai_chatbot(self.messages_sent)
+                                ai_output = await OllamaDiscord.ai_chatbot(self,self.messages_sent)
                                 print('-------------------------')
                                 print(ai_output)
                                 await self.send_messages(self.fix_quotes(ai_output))
@@ -120,6 +121,9 @@ class MyClient(discord.Client):
                 if message[index-1]==',':
                     message=message[:index-1]+'",'+message[index+2:]
         return message
+    
+    async def history_max(self):
+        await self.specific_channel_id.send("[chat history reached max. removing earlier messages.]")
                     
         
 
