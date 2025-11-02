@@ -25,10 +25,10 @@ class MyClient(discord.Client):
                 return
             
             message = message.content.strip().lower()
-            if message=='Yes' or  message=='yes':
+            if message in ('yes','y'):
                 self.waiting_for_confirmation=False
                 return True
-            if message=='No' or message=='no':
+            if message in ('no','n'):
                 self.waiting_for_confirmation=False
                 return
             await self.specific_channel.send("only respond with Yes or No")
