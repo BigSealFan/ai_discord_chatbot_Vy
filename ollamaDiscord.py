@@ -2,6 +2,7 @@ import asyncio
 from ollama import chat
 import ollama
 from ollama._types import ResponseError
+import aiohttp
 
 class OllamaDiscord :
     history = []
@@ -49,10 +50,12 @@ class OllamaDiscord :
         client = ollama.AsyncClient()
         while True:
             try:
-                response = await client.chat(model=current_model, messages=[*OllamaDiscord.history, {'role': 'user', 'content': user_input}])
+                response = await client.chat(model=current_model, messages=[*history, {'role': 'user', 'content': user_input}])
                 break
             except ResponseError as e:
                 print ('upstream error, retrying...')
+            except aiohttp.client_exceptions.ServerDisconnectedError as e1:
+                print('sever disconnected error, retrying...')
                 
         return (response.message.content)
     
