@@ -210,7 +210,8 @@ class MyClient(discord.Client):
 
          three_points=False
          var=0
-         while sep_index+1<len(message) and any(sepp==message[sep_index+1] for pos, sepp in self.positions) and message[sep_index+1]!='*':
+         chunk_first_chars = [chunk1 for chunk1, chunk2 in self.chunks]
+         while sep_index+1<len(message) and any(sepp==message[sep_index+1] for pos, sepp in self.positions) and message[sep_index+1] not in chunk_first_chars:
           #if next character is also a separator
               sep_index+=1 #include it in split
               if not three_points and (sep=='.' or sep=='!' or sep=='?'): #in case of spams like !!! ??? ...
