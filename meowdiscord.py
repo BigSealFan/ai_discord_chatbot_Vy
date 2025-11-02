@@ -132,14 +132,15 @@ class MyClient(discord.Client):
             self.initiate_list(message)
             
             if not self.positions or self.positions==[]: #no separators
-                await self.specific_channel.send(self.lowercase_uppercase(message))
+                if self.lowercase_uppercase(message.strip())!='n':
+                    await self.specific_channel.send(self.lowercase_uppercase(message))
                 message=None
                 break
 
             fpos, fchar = self.positions[0] #first separator and its position
 
             if any(fchar==chunk1 and chunk2 in message[fpos+1:] for chunk1, chunk2 in self.chunks) and len(message)>1: #if a chunk exists
-                fchar2 = next((chunk2 for chunk1, chunk2 in self.chunks if chunk1 == fchar),) #find the appropriate end of chunk
+                fchar2 = next((chunk2 for chunk1, chunk2 in self.chunks if chunk1 == fchar),None) #find the appropriate end of chunk
                 before, after, rest = self.chunk(message, fchar, fchar2)
                 if self.lowercase_uppercase(before.strip()): #to avoid empty messages 
                     await self.specific_channel.send(self.lowercase_uppercase(before.strip()))
@@ -149,7 +150,7 @@ class MyClient(discord.Client):
                 continue
 
             before, after = self.split(message, fchar, fpos)
-            if self.lowercase_uppercase(before.strip()):
+            if self.lowercase_uppercase(before.strip()) and self.lowercase_uppercase(before.strip())!='n':
                 await self.specific_channel.send(self.lowercase_uppercase(before.strip()))
             message=after.strip()
 
@@ -169,7 +170,8 @@ class MyClient(discord.Client):
 
          three_points=False
          var=0
-         while sep_index+1<len(message) and any(sepp==message[sep_index+1] for pos, sepp in self.positions): #if next character is also a separator
+         while sep_index+1<len(message) and any(sepp==message[sep_index+1] for pos, sepp in self.positions) and message[sep_index+1]!='*':
+          #if next character is also a separator
               sep_index+=1 #include it in split
               if not three_points and (sep=='.' or sep=='!' or sep=='?'): #in case of spams like !!! ??? ...
                  if sep=='.': #look at beginning of the function
@@ -179,8 +181,6 @@ class MyClient(discord.Client):
                  three_points=True
          if '?!' in message or '!?' in message: #it only does +1 for one of them
             sep_index+=1
-         if sep=='\n': #2 char long
-            var=-1
          
          return message[:sep_index].strip(), message[sep_index+1-var:].strip()
 
