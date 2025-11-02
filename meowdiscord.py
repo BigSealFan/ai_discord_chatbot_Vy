@@ -37,6 +37,8 @@ class MyClient(discord.Client):
         print('Logged on as', self.user)
 
     async def on_message(self, message):
+        if not message.guild: #ignore all DMs
+            return
         if self.waiting_for_confirmation:
             return
         if (message.content=='!start' and self.running==False) or message.content=='!forcestart':
