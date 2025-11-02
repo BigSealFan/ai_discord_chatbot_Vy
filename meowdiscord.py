@@ -26,7 +26,7 @@ class MyClient(discord.Client):
         elif message.content[:5]=='!help' and self.running:
             await self.specific_channel.send('```!start``` to start new conversation```!no [whatever u wanna say]``` ignores anything u write in that message```!save [name]``` to save your chat history as [name]```!load [name]``` to load your chat history of [name]```!end``` to end current conversation')
 
-        elif message.content=='!end':
+        elif message.content=='!end' and self.running:
                 if message.author.id != self.specific_user_id or message.channel.id != self.specific_channel.id :
                     return
                 await self.specific_channel.send("connection disconnected.")
@@ -95,7 +95,6 @@ class MyClient(discord.Client):
             
             if not self.positions or self.positions==[]: #no separators
                 await self.specific_channel.send(self.lowercase_uppercase(message))
-                print(self.lowercase_uppercase(message))
                 message=None
                 break
 
@@ -114,7 +113,6 @@ class MyClient(discord.Client):
             before, after = self.split(message, fchar, fpos)
             if self.lowercase_uppercase(before.strip()):
                 await self.specific_channel.send(self.lowercase_uppercase(before.strip()))
-                print(self.lowercase_uppercase(before.strip()))
             message=after.strip()
 
 
