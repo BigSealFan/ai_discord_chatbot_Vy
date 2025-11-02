@@ -15,8 +15,8 @@ class MyClient(discord.Client):
     waiting_for_confirmation=False
     admin_user_id = [int(os.environ["MY_DISCORD_ID"])] #admin accounts
 
-    def is_admin(self): #checks if current user is admin or not
-        return self.specific_user_id in self.admin_user_id
+    def is_admin(self, message): #checks if current user is admin or not
+        return message.author.id in self.admin_user_id
 
     async def are_you_sure(self):
         self.waiting_for_confirmation=True
@@ -54,7 +54,7 @@ class MyClient(discord.Client):
         
         elif message.content[:5]=='!help' and self.running:
             await self.specific_channel.send('```!start``` to start new conversation```!no [whatever u wanna say]``` ignores anything u write in that message```!save [name]``` to save your chat history as [name]```!load [name]``` to load your chat history of [name]```!end``` to end current conversation')
-            if self.is_admin(): #commands for only admin accounts
+            if self.is_admin(message): #commands for only admin accounts
                 await self.specific_channel.send('```!delete <file_name>``` to delete a save file ```!changec <channel_id>``` to move current conversation to another channel without interrupting ```!changeu``` to move current conversation to another user ```!addadmin``` pretty self explanatory')
         elif message.content=='!save' and self.running:
             if message.author.id != self.specific_user_id or message.channel.id != self.specific_channel.id :
@@ -113,6 +113,16 @@ class MyClient(discord.Client):
                 self.specific_channel=None
                 self.specific_user_id=None
                 self.running=False
+
+        elif message.content[:8]=='!changec' and self.is_admin(message) and self.running:
+            temporary_channel=self.specific_channel
+            self.specific_channel= await client.fetch_channel(message.content[9:].strip())
+            await temporary_channel.send(f"conversation successfully moved to channel : {self.specific_channel.name}")
+            await self.specific_channel.send(f"conversation successfully moved to this channel ")
+
+        elif message.content[:8]=='!changeu' and self.is_admin(message) and self.running:
+            self.specific_user_id=int(message.content[9:].strip())
+            await self.specific_channel.send(f'user successfully changed to <@{self.specific_user_id}>')
 
         elif message.content[:3]!='!no' and self.running:
             if message.author.id != self.specific_user_id or message.channel.id != self.specific_channel.id :
