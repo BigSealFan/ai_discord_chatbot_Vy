@@ -13,6 +13,10 @@ class MyClient(discord.Client):
     specific_user_id = None
     running = False
     waiting_for_confirmation=False
+    admin_user_id = [int(os.environ["MY_DISCORD_ID"])] #admin accounts
+
+    def is_admin(self): #checks if current user is admin or not
+        return self.specific_user_id in self.admin_user_id
 
     async def are_you_sure(self):
         self.waiting_for_confirmation=True
@@ -50,7 +54,8 @@ class MyClient(discord.Client):
         
         elif message.content[:5]=='!help' and self.running:
             await self.specific_channel.send('```!start``` to start new conversation```!no [whatever u wanna say]``` ignores anything u write in that message```!save [name]``` to save your chat history as [name]```!load [name]``` to load your chat history of [name]```!end``` to end current conversation')
-
+            if self.is_admin(): #commands for only admin accounts
+                await self.specific_channel.send('```!delete <file_name>``` to delete a save file ```!changec <channel_id>``` to move current conversation to another channel without interrupting ```!changeu``` to move current conversation to another user ```!addadmin``` pretty self explanatory')
         elif message.content=='!save' and self.running:
             if message.author.id != self.specific_user_id or message.channel.id != self.specific_channel.id :
                     return
