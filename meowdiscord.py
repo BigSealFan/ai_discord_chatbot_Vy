@@ -35,22 +35,22 @@ class MyClient(discord.Client):
 
         elif message.content[:5]=='!save' and self.running:
             name=message.content[6:].replace(" ","_").lower().strip() #name case insensitive and no spaces
-            with open("saves/logs.txt", "r") as file: 
+            with open("saves/logs.txt", "r", encoding="utf-8") as file: 
                 for line in file: 
                     if name==line.lower().strip(): #if exact match only
                         await self.specific_channel.send("this save file already exists. please choose another name")
                         return
 
                 file_name=f"saves/{name}.txt" 
-                with open(file_name, "w") as file:
+                with open(file_name, "w", encoding="utf-8") as file:
                     file.write(str(OllamaDiscord.history)) #put the chat history in text file
-                with open("saves/logs.txt", "a") as file:
+                with open("saves/logs.txt", "a", encoding="utf-8") as file:
                     file.write(f"\n{name}") #add the name of the text file in the logs for easier check
                 await self.specific_channel.send(f'save file "{name}" successfully saved!')
 
         elif message.content[:5]=='!load' and self.running: 
              name=message.content[6:].replace(" ","_").lower().strip() #name case insensitive and no spaces
-             with open("saves/logs.txt", "r") as file:
+             with open("saves/logs.txt", "r", encoding="utf-8") as file:
                 found=None 
                 for line in file: 
                     if name==line.lower().strip(): #if exact match only
@@ -60,7 +60,7 @@ class MyClient(discord.Client):
                  return
                     
                 file_name=f"saves/{name}.txt" 
-                with open(file_name, "r") as file:
+                with open(file_name, "r", encoding="utf-8") as file:
                     OllamaDiscord.history = ast.literal_eval(file.read())
                 await self.specific_channel.send(f'load file "{name}" successfully loaded!')
             
