@@ -55,7 +55,7 @@ class MyClient(discord.Client):
         elif message.content[:5]=='!help' and self.running:
             await self.specific_channel.send('```!start``` to start new conversation```!no [whatever u wanna say]``` ignores anything u write in that message```!save [name]``` to save your chat history as [name]```!load [name]``` to load your chat history of [name]```!end``` to end current conversation')
             if self.is_admin(message): #commands for only admin accounts
-                await self.specific_channel.send('```!delete <file_name>``` to delete a save file ```!changec <channel_id>``` to move current conversation to another channel without interrupting ```!changeu``` to move current conversation to another user ```!addadmin``` pretty self explanatory')
+                await self.specific_channel.send('```!delete <file_name>``` to delete a save file ```!changec <channel_id>``` to move current conversation to another channel without interrupting ```!changeu <user_id>``` to move current conversation to another user ```!addadmin <user_id>``` pretty self explanatory')
         elif message.content=='!save' and self.running:
             if message.author.id != self.specific_user_id or message.channel.id != self.specific_channel.id :
                     return
