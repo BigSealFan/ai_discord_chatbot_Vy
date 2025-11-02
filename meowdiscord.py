@@ -4,6 +4,7 @@ import sys
 import discord
 import asyncio
 import re
+import ast
 class MyClient(discord.Client):
 
     messages_sent =""
@@ -26,6 +27,43 @@ class MyClient(discord.Client):
         elif message.content[:5]=='!help' and self.running:
             await self.specific_channel.send('```!start``` to start new conversation```!no [whatever u wanna say]``` ignores anything u write in that message```!save [name]``` to save your chat history as [name]```!load [name]``` to load your chat history of [name]```!end``` to end current conversation')
 
+        elif message.content=='!save' and self.running:
+            await self.specific_channel.send("please specify the name of the save file : !save name_of_file")
+
+        elif message.content=='!load' and self.running:
+            await self.specific_channel.send("please specify the name of the load file : !load name_of_file")
+
+        elif message.content[:5]=='!save' and self.running:
+            name=message.content[6:].replace(" ","_").lower().strip() #name case insensitive and no spaces
+            with open("saves/logs.txt", "r") as file: 
+                for line in file: 
+                    if name==line.lower().strip(): #if exact match only
+                        await self.specific_channel.send("this save file already exists. please choose another name")
+                        return
+
+                file_name=f"saves/{name}.txt" 
+                with open(file_name, "w") as file:
+                    file.write(str(OllamaDiscord.history)) #put the chat history in text file
+                with open("saves/logs.txt", "a") as file:
+                    file.write(f"\n{name}") #add the name of the text file in the logs for easier check
+                await self.specific_channel.send(f'save file "{name}" successfully saved!')
+
+        elif message.content[:5]=='!load' and self.running: 
+             name=message.content[6:].replace(" ","_").lower().strip() #name case insensitive and no spaces
+             with open("saves/logs.txt", "r") as file:
+                found=None 
+                for line in file: 
+                    if name==line.lower().strip(): #if exact match only
+                        found=True
+                if not found:
+                 await self.specific_channel.send("this load file doesn't exist. please choose a valid name")
+                 return
+                    
+                file_name=f"saves/{name}.txt" 
+                with open(file_name, "r") as file:
+                    OllamaDiscord.history = ast.literal_eval(file.read())
+                await self.specific_channel.send(f'load file "{name}" successfully loaded!')
+            
         elif message.content=='!end' and self.running:
                 if message.author.id != self.specific_user_id or message.channel.id != self.specific_channel.id :
                     return
