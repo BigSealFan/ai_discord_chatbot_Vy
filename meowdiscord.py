@@ -12,11 +12,33 @@ class MyClient(discord.Client):
     specific_channel  = None
     specific_user_id = None
     running = False
+    waiting_for_confirmation=False
+
+    async def are_you_sure(self):
+        self.waiting_for_confirmation=True
+        def check(m) : return (m.author.id == self.specific_user_id and m.channel.id == self.specific_channel.id)
+        while True:
+            try:
+                message = await self.wait_for("message", check=check, timeout=30)
+            except asyncio.TimeoutError:
+                await self.specific_channel.send("Timed out.")
+                return
+            
+            message = message.content.strip().lower()
+            if message=='Yes' or  message=='yes':
+                self.waiting_for_confirmation=False
+                return True
+            if message=='No' or message=='no':
+                self.waiting_for_confirmation=False
+                return
+            await self.specific_channel.send("only respond with Yes or No")
 
     async def on_ready(self):
         print('Logged on as', self.user)
 
     async def on_message(self, message):
+        if self.waiting_for_confirmation:
+            return
         if (message.content=='!start' and self.running==False) or message.content=='!forcestart':
             self.specific_user_id = message.author.id
             self.specific_channel = message.channel
@@ -28,19 +50,24 @@ class MyClient(discord.Client):
             await self.specific_channel.send('```!start``` to start new conversation```!no [whatever u wanna say]``` ignores anything u write in that message```!save [name]``` to save your chat history as [name]```!load [name]``` to load your chat history of [name]```!end``` to end current conversation')
 
         elif message.content=='!save' and self.running:
+            if message.author.id != self.specific_user_id or message.channel.id != self.specific_channel.id :
+                    return
             await self.specific_channel.send("please specify the name of the save file : !save name_of_file")
 
         elif message.content=='!load' and self.running:
+            if message.author.id != self.specific_user_id or message.channel.id != self.specific_channel.id :
+                    return
             await self.specific_channel.send("please specify the name of the load file : !load name_of_file")
 
         elif message.content[:5]=='!save' and self.running:
+            if message.author.id != self.specific_user_id or message.channel.id != self.specific_channel.id :
+                    return
             name=message.content[6:].replace(" ","_").lower().strip() #name case insensitive and no spaces
             with open("saves/logs.txt", "r", encoding="utf-8") as file: 
                 for line in file: 
                     if name==line.lower().strip(): #if exact match only
                         await self.specific_channel.send("this save file already exists. please choose another name")
                         return
-
                 file_name=f"saves/{name}.txt" 
                 with open(file_name, "w", encoding="utf-8") as file:
                     file.write(str(OllamaDiscord.history)) #put the chat history in text file
@@ -48,7 +75,13 @@ class MyClient(discord.Client):
                     file.write(f"\n{name}") #add the name of the text file in the logs for easier check
                 await self.specific_channel.send(f'save file "{name}" successfully saved!')
 
-        elif message.content[:5]=='!load' and self.running: 
+        elif message.content[:5]=='!load' and self.running:
+             if message.author.id != self.specific_user_id or message.channel.id != self.specific_channel.id :
+                    return
+             await self.specific_channel.send("are you sure you want to load ? any unsaved conversation will be gone. answer Yes or No") 
+             if not await self.are_you_sure():
+                 await self.specific_channel.send("loading process cancelled")
+                 return
              name=message.content[6:].replace(" ","_").lower().strip() #name case insensitive and no spaces
              with open("saves/logs.txt", "r", encoding="utf-8") as file:
                 found=None 
