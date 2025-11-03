@@ -6,6 +6,7 @@ import asyncio
 import re
 import ast
 from pathlib import Path
+import json
 class MyClient(discord.Client):
 
     messages_sent =""
@@ -14,10 +15,18 @@ class MyClient(discord.Client):
     specific_user_id = None
     running = False
     waiting_for_confirmation=False
-    admin_user_id = [int(os.environ["MY_DISCORD_ID"])] #admin accounts
+    admins = [] #admin accounts
+
+    def initiate_admins(self):
+        file_path = "admins.json"
+        if os.path.exists(file_path):
+            with open(file_path, "r") as f:
+                self.admins = json.load(f)
+        else:
+            self.admins = []
 
     def is_admin(self, message): #checks if current user is admin or not
-        return message.author.id in self.admin_user_id
+        return message.author.id in self.admins
 
     async def are_you_sure(self):
         self.waiting_for_confirmation=True
@@ -40,6 +49,7 @@ class MyClient(discord.Client):
 
     async def on_ready(self):
         print('Logged on as', self.user)
+        self.initiate_admins()
 
     async def on_message(self, message):
         if not message.guild: #ignore all DMs
@@ -116,8 +126,6 @@ class MyClient(discord.Client):
                 await self.specific_channel.send(f'load file "{name}" successfully loaded!')
 
         elif message.content=='!delete' and self.is_admin(message) and self.running:
-            if message.author.id != self.specific_user_id or message.channel.id != self.specific_channel.id :
-                    return
             await self.specific_channel.send("please specify the name of the file u wish to delete : !delete name_of_file")
 
         elif message.content[:7]=='!delete' and self.is_admin(message) and self.running:
@@ -152,6 +160,32 @@ class MyClient(discord.Client):
         elif message.content[:8]=='!changeu' and self.is_admin(message) and self.running:
             self.specific_user_id=int(message.content[9:].strip())
             await self.specific_channel.send(f'user successfully changed to <@{self.specific_user_id}>')
+
+        elif message.content=='!addadmin' and self.is_admin(message) and self.running:
+            await self.specific_channel.send("please specify the ID of the user to be added as admin : !addadmin user_id")
+
+        elif message.content[:9]=='!addadmin' and self.is_admin(message) and self.running:
+            user_id=int(message.content[10:].replace(" ","_").strip()) # no spaces
+            if user_id in self.admins:
+                await self.specific_channel.send(f'user {user_id} is already admin')
+            else:
+                self.admins.append(user_id)
+                with open("admins.json", "w") as f:
+                    json.dump(self.admins, f)
+                await self.specific_channel.send(f'added {user_id} as admin!')
+
+        elif message.content=='!deladmin' and self.is_admin(message) and self.running:
+            await self.specific_channel.send("please specify the ID of the user to be removed from admin : !deladmin user_id")
+
+        elif message.content[:9]=='!deladmin' and self.is_admin(message) and self.running:
+            user_id=int(message.content[10:].replace(" ","_").strip()) # no spaces
+            if user_id in self.admins:
+                self.admins.remove(user_id)
+                with open("admins.json", "w") as f:
+                    json.dump(self.admins, f)
+                await self.specific_channel.send(f'user {user_id} removed from admin')
+            else:
+                await self.specific_channel.send(f"user {user_id} isn't an admin")
 
 
 
