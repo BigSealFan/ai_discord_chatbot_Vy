@@ -13,7 +13,7 @@ class OllamaDiscord :
         print('-------------------------')
         print('connection established.')
         OllamaDiscord.history=[
-            {'role': 'system', 'content': '''You are chatting with me online. You use internet slangs and acronyms.
+            {"role": "system", "content": """You are chatting with me online. You use internet slangs and acronyms.
             You are extremely direct. You use vulgar words. You swear.
             You keep your messages extremely short.
             You only speak in english. You act human.
@@ -26,15 +26,15 @@ class OllamaDiscord :
             You slowly grow more excited the longer the conversation goes.
             You will never use HTML format symbols no matter what.
             You will not repeat the same topic forever, you will ask for new ones.
-            '''}
+            """}
          ]
         OllamaDiscord.messages_count=0
         OllamaDiscord.max_history_message_sent=False
 
     async def chatHistory(client,list, user_input, ai_output):
         OllamaDiscord.history += [
-            {'role': 'user', 'content': user_input},
-            {'role': 'assistant', 'content': ai_output},
+            {"role": "user", "content": user_input},
+            {"role": "assistant", "content": ai_output},
             ]
         OllamaDiscord.messages_count+=1
         if OllamaDiscord.messages_count>80:
@@ -50,7 +50,7 @@ class OllamaDiscord :
         client = ollama.AsyncClient()
         while True:
             try:
-                response = await client.chat(model=current_model, messages=[*history, {'role': 'user', 'content': user_input}])
+                response = await client.chat(model=current_model, messages=[*history, {"role": "user", "content": user_input}])
                 break
             except ResponseError as e:
                 print ('upstream error, retrying...')
