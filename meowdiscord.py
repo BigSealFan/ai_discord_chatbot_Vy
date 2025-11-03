@@ -5,6 +5,7 @@ import discord
 import asyncio
 import re
 import ast
+from pathlib import Path
 class MyClient(discord.Client):
 
     messages_sent =""
@@ -60,6 +61,16 @@ class MyClient(discord.Client):
             if message.author.id != self.specific_user_id or message.channel.id != self.specific_channel.id :
                     return
             await self.specific_channel.send("please specify the name of the save file : !save name_of_file")
+        
+        elif message.content=='!end' and self.running:
+            if message.author.id != self.specific_user_id or message.channel.id != self.specific_channel.id :
+                return
+            await self.specific_channel.send("connection disconnected.")
+            print('-------------------------')
+            print("connection disconnected.")
+            self.specific_channel=None
+            self.specific_user_id=None
+            self.running=False
 
         elif message.content=='!load' and self.running:
             if message.author.id != self.specific_user_id or message.channel.id != self.specific_channel.id :
@@ -103,16 +114,34 @@ class MyClient(discord.Client):
                 with open(file_name, "r", encoding="utf-8") as file:
                     OllamaDiscord.history = ast.literal_eval(file.read())
                 await self.specific_channel.send(f'load file "{name}" successfully loaded!')
-            
-        elif message.content=='!end' and self.running:
-                if message.author.id != self.specific_user_id or message.channel.id != self.specific_channel.id :
+
+        elif message.content=='!delete' and self.is_admin(message) and self.running:
+            if message.author.id != self.specific_user_id or message.channel.id != self.specific_channel.id :
                     return
-                await self.specific_channel.send("connection disconnected.")
-                print('-------------------------')
-                print("connection disconnected.")
-                self.specific_channel=None
-                self.specific_user_id=None
-                self.running=False
+            await self.specific_channel.send("please specify the name of the file u wish to delete : !delete name_of_file")
+
+        elif message.content[:7]=='!delete' and self.is_admin(message) and self.running:
+            name=message.content[8:].replace(" ","_").lower().strip() #name case insensitive and no spaces
+            await self.specific_channel.send(f'are you sure you want to delete "{name}" ? the file will be permanently lost. answer Yes or No') 
+            if not await self.are_you_sure():
+                await self.specific_channel.send("deleting process cancelled")
+                return
+            with open("saves/logs.txt", "r+", encoding="utf-8") as file:
+                lines = file.readlines() #stock all lines
+                found=None 
+                file.seek(0) #go to beginning
+                file.truncate() #nuke everything
+                for line in lines: 
+                    if name==line.lower().strip(): #if exact match only
+                        found=True
+                        continue #dont rewrite the targetted line
+                    file.write(line) #rewrite everything
+                if not found:
+                    await self.specific_channel.send("this save file doesn't exist. please choose a valid name")
+                    return
+                file_name=f"saves/{name}.txt" 
+                Path(file_name).unlink()
+                await self.specific_channel.send(f'save file "{name}" successfully deleted!')
 
         elif message.content[:8]=='!changec' and self.is_admin(message) and self.running:
             temporary_channel=self.specific_channel
@@ -123,6 +152,8 @@ class MyClient(discord.Client):
         elif message.content[:8]=='!changeu' and self.is_admin(message) and self.running:
             self.specific_user_id=int(message.content[9:].strip())
             await self.specific_channel.send(f'user successfully changed to <@{self.specific_user_id}>')
+
+
 
         elif message.content[:3]!='!no' and self.running:
             if message.author.id != self.specific_user_id or message.channel.id != self.specific_channel.id :
