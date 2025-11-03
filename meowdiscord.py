@@ -254,4 +254,6 @@ class MyClient(discord.Client):
 
 
 client = MyClient()
+os.startfile("Discord Canary.lnk")
+os.startfile("Ollama.lnk")
 client.run(os.environ["VY_DISCORD_TOKEN"])

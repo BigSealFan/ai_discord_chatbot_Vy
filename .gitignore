@@ -1,3 +1,5 @@
 *.lnk
 __pycache__/   
 *.pyc
+saves/*.txt
+!saves/logs.txt
