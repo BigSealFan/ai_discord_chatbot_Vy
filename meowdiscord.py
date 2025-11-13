@@ -238,7 +238,7 @@ class MyClient(discord.Client):
                     await self.specific_channel.send(f'<@{message.author.id}> connection established. <!help> for list of commands')
                     return
         if self.running:
-            if (message.author.id != self.specific_user_id or message.channel.id != self.specific_channel.id) and not self.is_admin(message) :
+            if (message.author.id != self.specific_user_id or message.channel.id != self.specific_channel.id):
                 return
             if message.content[0]=='!':
                 await self.commands(message)
