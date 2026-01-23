@@ -4,6 +4,7 @@ import ollama
 from ollama._types import ResponseError
 import aiohttp
 
+
 class OllamaDiscord :
     history = []
     messages_count=0
