@@ -1,4 +1,4 @@
-AI Discord Chatbot : Vy
+# <u>AI Discord Chatbot : Vy</u>
 
 Vy is a proof-of-concept AI discord chatbot that mimicks human online chatting. It can read multiple messages sent in a row and treat them as a single prompt, and it automatically splits the AI response into multiple short messages, while handling punctuations that aren't always present in our normal chatting behavior.
 The chatbot also has commands that can be used, ranging from an entire save/load system, to admin-only commands that allow precise control of all variables.
