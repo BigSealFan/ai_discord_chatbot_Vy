@@ -1,4 +1,4 @@
-# <u>AI Discord Chatbot : Vy</u>
+AI Discord Chatbot : Vy
 
 Vy is a proof-of-concept AI discord chatbot that mimicks human online chatting. It can read multiple messages sent in a row and treat them as a single prompt, and it automatically splits the AI response into multiple short messages, while handling punctuations that aren't always present in our normal chatting behavior.
 The chatbot also has commands that can be used, ranging from an entire save/load system, to admin-only commands that allow precise control of all variables.
@@ -6,7 +6,7 @@ A context management feature prevents conversation histories from growing out of
 
 It's coded in python, and uses Ollama to communicate to LLM models via its API. It uses many libraries such as discord.py-self to handle real-time event loops of a discord account, ollama-python to communicate with the API, asyncio to work with non-blocking operations, and aiohttp to handle asynchronous HTTP requests for the API. 
 
-#### Disclaimer :
+### Disclaimer :
 Automating user accounts is against the Discord ToS. This project is a proof of concept, meant to help me learn and improve at coding.
 
 Also, I am aware of the many flaws present in my code, and will be addressing them all eventually, my main focus being university for now. Any feedback is still appreciated though !
@@ -16,7 +16,7 @@ Before launching the program, we need to pip install ollama, aiohttp, and discor
 
 The code first launches a mirror version of discord, so we can test chatting with the chatbot from another discord account, and ollama, responsible for the AI api.
 
-#### The MyClient class :
+### The MyClient class :
 
 We create a new object from the class MyClient, and run the program while giving it the discord token of the ai chatbot account, an env variable stored locally.
 
@@ -41,7 +41,7 @@ The goal is being able to receive multiple messages from the user and send them 
 * We use the create_task function from the asyncio library and store it in debounce_task variable. It is a task running with a 2 second timer, and at the end of the timer the message is sent to the AI.
 When a message is received, if a task is currently running, it means that it has been less than 2 seconds since the last message. It cancels the running task, and a new task is created with a new 2 seconds timer.
 
-#### The send_messages function :
+### The send_messages function :
 
 The goal of this function is to divide the message received by the AI into parts, removing commas and full-stops and others to have it seem like it's chatting like a "normal person" and using those as separators for the different parts, and then having the chatbot send several messages on discord, 1 of those parts per message. Some separators are hidden, such as `.` and `,`, while others are kept, such as `?` and `!`.
 (I will eventually completely rewrite this whole function and all others tied to it)
@@ -62,7 +62,7 @@ The goal of this function is to divide the message received by the AI into parts
   * Decide which separators to be visible in the message, and which to be completely skipped over.
   * Special cases are manually treated, for when there's a bunch of `!`, `?`, or `.` in a row, or when there's a `!?` or `?!`.
 
-#### The API 
+### The API :
 
 The interaction with the AI is done through the OllamaDiscord class. The message sent through the API is divided into 3 types of sections :
 * The system command, formatted as `{'role': 'system', 'content': ...}`.
@@ -100,7 +100,7 @@ Since the waiting_for_confirmation variable is defined as False by default, once
 * If the user sends anything else, we send a discord message telling them to only respond with a yes or no. 
 The function can only end if the timer runs out, or if the user answers successfully.
 
-#### The commands : 
+### The commands : 
 They are messages sent by the user that start with a `!`, the first command the user uses is `!start`. These commands are not sent to the AI API, and are instead processed separately. 
 The function commands inside the class Commands is called whenever a message sent from the user starts with a `!`. It removes the `!` at the beginning, and then compares the remaining message to see if it matches any current command. Otherwise, it sends a discord message saying that it's not a valid command. 
 Only one command can be processed at a time. After a command is processed, the function returns nothing (None), and we get out of the commands and back to the default behavior.
