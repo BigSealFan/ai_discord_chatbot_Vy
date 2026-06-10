@@ -1,8 +1,4 @@
-'''On new pc before i can use the program :
-        python -m pip install ollama
-        python -m pip install aiohttp
-        python -m pip install discord.py-self
-'''
+# pip install -r requirements.txt
 
 from ollamaDiscord import OllamaDiscord
 import os
