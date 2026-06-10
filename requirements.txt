@@ -1,0 +1,3 @@
+ollama
+aiohttp
+discord.py-self
