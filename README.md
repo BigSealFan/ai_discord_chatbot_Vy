@@ -122,7 +122,9 @@ Ends the current connection, and resets the author, channel, and running variabl
 * reset :
 Instead of ending, it simply resets the history so the user can start a new conversation. It then sends a message to discord saying that the connection was reset.
 * save :
-This opens up a save file system, being able to save current conversations so they can be continued later on. They are saved in the directory `saves` situated in the same directory as the code. The `logs.txt` file is always present there, it contains only the titles of the save files, to find them more easily.
+This opens up a save file system, being able to save current conversations so they can be continued later on. 
+They are saved in the directory `saves` situated in the root directory. We use relative pathing using the `pathlib` library to get the path of the current file that's running the code thanks to `__file__`, then deduce the root directory using `.parent`. We then store the paths of `logs.txt` and `admins.json` (their purpose is explained further below) in the variables `logs_txt_path` and `admins_json_path` respectively, so we can easily use them several times in the relevant commands.
+The `logs.txt` file is always present there, it contains only the titles of the save files, to find them more easily.
 If the entire message is exactly equal to `!save`, send a message to discord telling the user to specify the name of the save file.
 We replace all the spaces with `_`, and make all the characters lowercase.
 We check inside the `logs.txt` file and compare line by line. If the name given exactly matches with an existing save file, send a message to discord telling the user to pick another name.
@@ -146,7 +148,7 @@ Only works if the user is admin.
 If the entire message is exactly equal to `!addadmin`, send a message to discord telling the user to specify the ID of the user.
 We replace all the spaces with `_`, and make all the characters lowercase.
 If the ID given exists in the array admins, send a message to discord telling the user that the ID given is already an admin.
-If all the conditions are correctly met, add the ID to the end of the array admins, and then add it to the `admins.json` file situated in the same directory as the code. It then sends a message to discord saying that the ID was successfully added.
+If all the conditions are correctly met, add the ID to the end of the array admins, and then add it to the `admins.json` file situated in the root directory. It then sends a message to discord saying that the ID was successfully added.
 * deladmin :
 Only works if the user is admin. 
 If the entire message is exactly equal to `!deladmin`, send a message to discord telling the user to specify the ID of the user.
