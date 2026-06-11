@@ -46,7 +46,7 @@ class OllamaDiscord :
         return OllamaDiscord.history
 
     async def chatGenerate(user_input, history):
-        current_model = 'deepseek-v3.1:671b-cloud'
+        current_model = 'gpt-oss:120b-cloud'
         client = ollama.AsyncClient()
         while True:
             try:

@@ -12,9 +12,12 @@ Automating user accounts is against the Discord ToS. This project is a proof of 
 Also, I am aware of the many flaws present in my code, and will be addressing them all eventually, my main focus being university for now. Any feedback is still appreciated though !
 
 ## <u>How the program works :</u>
-Before launching the program, we need to pip install ollama, aiohttp, and discord.py-self
+Before launching the program, we need to pip install ollama, aiohttp, and discord.py-self. We do so with :
+```
+pip install -r requirements.txt
+```
 
-The code first launches a mirror version of discord, so we can test chatting with the chatbot from another discord account, and ollama, responsible for the AI api.
+Ideally you should have a mirror version of discord open, so we can test chatting with the chatbot from another discord account, and must have ollama open, responsible for the AI api.
 
 ### The MyClient class :
 
