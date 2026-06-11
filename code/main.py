@@ -35,14 +35,17 @@ class MyClient(discord.Client):
             try:
                 message = await self.wait_for("message", check=check, timeout=30)
             except asyncio.TimeoutError:
-                await self.specific_channel.send("Timed out.")
+                await self.specific_channel.send("```Timed out.```")
+                self.waiting_for_confirmation=False
                 return
             
             message = message.content.strip().lower()
             if message in ('yes','y'):
+                await asyncio.sleep(2) 
                 self.waiting_for_confirmation=False
                 return True
             if message in ('no','n'):
+                await asyncio.sleep(2) 
                 self.waiting_for_confirmation=False
                 return
             await self.specific_channel.send("```only respond with Yes or No```")
@@ -54,9 +57,9 @@ class MyClient(discord.Client):
     async def on_message(self, message):
         if not message.guild: #ignore all DMs
             return
-        if self.waiting_for_confirmation:
+        elif self.waiting_for_confirmation:
             return
-        if (message.content=='!start' and self.running==False) or message.content=='!forcestart':
+        elif (message.content=='!start' and self.running==False) or message.content=='!forcestart':
              if not self.running:
                     self.specific_user_id = message.author.id
                     self.specific_channel = message.channel
@@ -64,11 +67,12 @@ class MyClient(discord.Client):
                     self.running=True
                     await self.specific_channel.send(f'<@{message.author.id}> connection established. <!help> for list of commands')
                     return
-        if self.running:
+        elif self.running:
             if (message.author.id != self.specific_user_id or message.channel.id != self.specific_channel.id):
                 return
             if message.content[0]=='!':
                 await Commands.commands(self,message)
+                return
             else :
                 if not self.messages_sent:
                     self.messages_sent=message.content
@@ -77,20 +81,18 @@ class MyClient(discord.Client):
                 if self.debounce_task and not self.debounce_task.done():
                     self.debounce_task.cancel()
 
-                async def send_the_sum():
-                        try:
-                            await asyncio.sleep(2)
-                            ai_output = await OllamaDiscord.ai_chatbot(self,self.messages_sent)
-                            print('-------------------------')
-                            print(ai_output)
-                            await self.send_messages(self.fix_quotes(ai_output))
-                            self.messages_sent = "" 
-                        except asyncio.CancelledError:
-                            pass
+                self.debounce_task = asyncio.create_task(self.send_the_sum())
 
-                self.debounce_task = asyncio.create_task(send_the_sum())
-
-
+    async def send_the_sum(self):
+        try:
+            await asyncio.sleep(2)
+            ai_output = await OllamaDiscord.ai_chatbot(self,self.messages_sent)
+            print('-------------------------')
+            print(ai_output)
+            await self.send_messages(self.fix_quotes(ai_output))
+            self.messages_sent = "" 
+        except asyncio.CancelledError:
+            pass
                     
     positions=[]
     chunks=[('(',')'),('"','"'),('“','”'),('*','*')]

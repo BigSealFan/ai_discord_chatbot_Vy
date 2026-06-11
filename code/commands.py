@@ -88,7 +88,7 @@ class Commands:
                         file_name=f"saves/{name}.txt" 
                         with open(file_name, "r", encoding="utf-8") as file:
                             OllamaDiscord.history = ast.literal_eval(file.read())
-                        await self.specific_channel.send(f'load file "{name}" successfully loaded!')
+                        await self.specific_channel.send(f'```load file "{name}" successfully loaded!```')
                         return
                     
                 if msg.startswith("delete"):
