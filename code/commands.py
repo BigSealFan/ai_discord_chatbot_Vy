@@ -4,7 +4,12 @@ from pathlib import Path
 import json
 
 class Commands:
+
     async def commands (self, message):
+            current_dir = Path(__file__).parent # we get the /code dir
+            logs_txt_path = current_dir.parent / "saves" / "logs.txt" # equivalent to ../saves/logs.txt
+            admins_json_path = current_dir.parent / "admins.json"
+
             msg = message.content[1:].lower()
             index=msg.find(' ') +1
             if msg.startswith("help"):
@@ -50,7 +55,7 @@ class Commands:
                             await self.specific_channel.send("```please specify the name of the save file : !save name_of_file```")
                             return
                         name=msg[index:].replace(" ","_").lower().strip() #name case insensitive and no spaces
-                        with open("saves/logs.txt", "r", encoding="utf-8") as file: 
+                        with open(logs_txt_path, "r", encoding="utf-8") as file: 
                             for line in file: 
                                 if name==line.lower().strip(): #if exact match only
                                     await self.specific_channel.send("```this save file already exists. please choose another name```")
@@ -58,7 +63,7 @@ class Commands:
                             file_name=f"saves/{name}.txt" 
                         with open(file_name, "w", encoding="utf-8") as file:
                                 file.write(str(OllamaDiscord.history)) #put the chat history in text file
-                        with open("saves/logs.txt", "a", encoding="utf-8") as file:
+                        with open(logs_txt_path, "a", encoding="utf-8") as file:
                                 file.write(f"\n{name}") #add the name of the text file in the logs for easier check
                         await self.specific_channel.send(f'```save file "{name}" successfully saved!```')
                         return
@@ -72,7 +77,7 @@ class Commands:
                             await self.specific_channel.send("```loading process cancelled```")
                             return
                         name=msg[index:].replace(" ","_").lower().strip() #name case insensitive and no spaces
-                        with open("saves/logs.txt", "r", encoding="utf-8") as file:
+                        with open(logs_txt_path, "r", encoding="utf-8") as file:
                             found=None 
                             for line in file: 
                                 if name==line.lower().strip(): #if exact match only
@@ -98,7 +103,7 @@ class Commands:
                     if not await self.are_you_sure(message.author.id, message.channel.id):
                         await self.specific_channel.send("```deleting process cancelled```")
                         return
-                    with open("saves/logs.txt", "r+", encoding="utf-8") as file:
+                    with open(logs_txt_path, "r+", encoding="utf-8") as file:
                         lines = file.readlines() #stock all lines
                         found=None 
                         file.seek(0) #go to beginning
@@ -129,7 +134,7 @@ class Commands:
                         return
                     else:
                         self.admins.append(user_id)
-                        with open("admins.json", "w") as f:
+                        with open(admins_json_path, "w") as f:
                             json.dump(self.admins, f)
                         await self.specific_channel.send(f'```added {user_id} as admin!```')
                         return
@@ -144,7 +149,7 @@ class Commands:
                     user_id=int(msg[index:].replace(" ","_").strip()) # no spaces
                     if user_id in self.admins:
                         self.admins.remove(user_id)
-                        with open("admins.json", "w") as f:
+                        with open(admins_json_path, "w") as f:
                             json.dump(self.admins, f)
                         await self.specific_channel.send(f'```user {user_id} removed from admin```')
                         return
