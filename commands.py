@@ -156,6 +156,9 @@ class Commands:
                     if not self.is_admin(message):
                         await self.specific_channel.send("```you are not admin >:(```")
                         return
+                    if msg=="changeu":
+                        await self.specific_channel.send("```please specify the user to change to```")
+                        return
                     self.specific_user_id=int(msg[index:].strip())
                     await self.specific_channel.send(f'user successfully changed to <@{self.specific_user_id}>')
                     return
@@ -163,6 +166,9 @@ class Commands:
                 elif msg.startswith("changec"):
                     if not self.is_admin(message):
                         await self.specific_channel.send("```you are not admin >:(```")
+                        return
+                    if msg=="changec":
+                        await self.specific_channel.send("```please specify the channel to change to```")
                         return
                     temporary_channel=self.specific_channel
                     self.specific_channel= await self.fetch_channel(msg[index:].strip())

@@ -155,7 +155,9 @@ If the ID given DOES NOT exist in the array admins, send a message to discord te
 If all the conditions are correctly met, remove the ID from the array admins, as well as from the `admins.json` file. It then sends a message to discord saying that the ID was successfully deleted.
 * changeu :
 Only works if the user is admin. Change the current user to the one specified. It then sends a message to discord saying that the change was successful.
+If the entire message is exactly equal to `!changeu`, send a message to discord telling the user to specify the user to change to.
 * changec :
 Only works if the user is admin. Change the current channel to the one specified. The chatbot then sends a message in both the previous and the new channels to verify the change went correctly.
+If the entire message is exactly equal to `!changec`, send a message to discord telling the user to specify the channel to change to.
 * no :
 Any message that starts with a `!no` will be ignored by the program, so the user is able to communicate with others without having the AI process it.
